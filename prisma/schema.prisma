@@ -1,0 +1,79 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_STRING_FOR_PRISMA")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  username  String     @unique
+  bio       String?
+  password  String
+  firstName String?
+  lastName  String?
+  doj       DateTime   @default(now())
+  dpUrl     String?
+  tasks     Task[]
+  schedules Schedule[]
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  title       String
+  desc        String?
+  category    String?
+  subCategory String?
+  priority    String?
+  tags        String[]
+  bookmark    Boolean
+  completed   Boolean
+  archive     Boolean
+  deadline    DateTime?
+  attachments String[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  subtasks    Subtask[]
+}
+
+model Subtask {
+  id          Int       @id @default(autoincrement())
+  desc        String
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId      Int
+  title       String
+  attachments String[]
+  tags        String[]
+  completed   Boolean
+  deadline    DateTime?
+}
+
+model Schedule {
+  id              Int      @id @default(autoincrement())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+  name            String
+  desc            String?
+  startDate       DateTime?
+  endDate         DateTime?
+  gapDays         Int
+  highestPriority Boolean
+  works           Work[]
+}
+
+model Work {
+  id         Int      @id @default(autoincrement())
+  name       String
+  desc       String?
+  startTime  DateTime
+  endTime    DateTime
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  scheduleId Int
+}
