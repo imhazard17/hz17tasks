@@ -7,7 +7,7 @@ const bcrypt = require('bcrypt')
 const auth = require('../middleware/authentication')
 
 // POST /auth/signup
-router.post('/auth/signup', auth, uplUserValidtn, upload.single('file'), errForward(async (req, res) => {
+router.post('/signup', auth, uplUserValidtn, upload.single('file'), errForward(async (req, res) => {
     const createdUser = await prisma.user.create({
         data: {
             username: req.headers.username,
@@ -36,7 +36,7 @@ router.post('/auth/signup', auth, uplUserValidtn, upload.single('file'), errForw
 }))
 
 // GET /auth/login
-router.get('/auth/login', auth, userValidtn, errForward(async (req, res) => {
+router.get('/login', auth, userValidtn, errForward(async (req, res) => {
     const user = await prisma.user.findUnique({
         where: {
             username: req.body.username
