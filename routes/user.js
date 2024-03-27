@@ -8,14 +8,14 @@ const router = require("express").Router;
 const fs = require('node:fs/promises')
 const jwt = require('jsonwebtoken')
 
-// GET /user/share-profile
-router.get('/:userIdJwt', auth, errForward(async (req, res) => {
+// GET /user/share-my-profile
+router.get('/share-my-profile', auth, errForward(async (req, res) => {
     const userIdJwt = jwt.sign(req.locals.userId, process.env.SHARE_JWT_SECRET)
     return res.status(200).json(userIdJwt)
 }))
 
-// GET /user/share/:userIdJwt
-router.get('/:userIdJwt', auth, errForward(async (req, res) => {
+// GET /user/shared-profile/:userIdJwt
+router.get('/shared-profile/:userIdJwt', auth, errForward(async (req, res) => {
     const userId = jwt.verify(req.params.userIdJwt, process.env.SHARE_JWT_SECRET)
 
     const user = await prisma.user.findUnique({

@@ -5,7 +5,39 @@ const errForward = require('../utils/errorForward')
 const prisma = require('../utils/db')
 const auth = require('../middleware/authentication')
 const router = require("express").Router;
-const fs = require('node:fs/promises')
+
+// GET /user/share-my-schedule/:scheduleId
+router.get('/share-my-schedule/:scheduleId', auth, errForward(async (req, res) => {
+    const scheduleIdJwt = jwt.sign(req.params.scheduleId, process.env.SHARE_JWT_SECRET)
+    return res.status(200).json(scheduleIdJwt)
+}))
+
+// GET /user/shared-schedule/:scheduleIdJwt
+router.get('/shared-schedule/:scheduleIdJwt', auth, errForward(async (req, res) => {
+    const scheduleId = jwt.verify(req.params.scheduleIdJwt, process.env.SHARE_JWT_SECRET)
+
+    const schedule = await prisma.schedule.findUnique({
+        where: {
+            id: scheduleId,
+        },
+        include: {
+            works: true,
+            task: {
+                title: true,
+                desc: true,
+            }
+        }
+    })
+
+    if (!schedule) {
+        return res.status(404).json({
+            err: 'Error getting schedule details'
+        })
+    }
+
+    delete schedule.taskId
+    return res.status(200).json(schedule)
+}))
 
 // GET /schedule/id/:id
 router.get('/id/:id', auth, errForward(async (req, res) => {

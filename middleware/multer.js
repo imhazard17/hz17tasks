@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 module.exports = multer({
     storage: storage,
     limits: {
-        fileSize: 7 * 1024 * 1024
+        fileSize: 3 * 1024 * 1024
     },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {

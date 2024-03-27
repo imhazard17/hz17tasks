@@ -5,7 +5,40 @@ const errForward = require('../utils/errorForward')
 const prisma = require('../utils/db')
 const auth = require('../middleware/authentication')
 const router = require("express").Router;
+const jwt = require('jsonwebtoken')
 const fs = require('node:fs/promises')
+
+// GET /user/share-my-task/:taskId
+router.get('/share-my-task', auth, errForward(async (req, res) => {
+    const taskIdJwt = jwt.sign(req.params.taskId, process.env.SHARE_JWT_SECRET)
+    return res.status(200).json(taskIdJwt)
+}))
+
+// GET /user/shared-task/:taskIdJwt
+router.get('/shared-task/:taskIdJwt', auth, errForward(async (req, res) => {
+    const taskId = jwt.verify(req.params.taskIdJwt, process.env.SHARE_JWT_SECRET)
+
+    const task = await prisma.task.findUnique({
+        where: {
+            id: taskId,
+        },
+        include: {
+            subtasks: true,
+            user: {
+                username: true,
+            }
+        }
+    })
+
+    if (!task) {
+        return res.status(404).json({
+            err: 'Error getting task details'
+        })
+    }
+
+    delete task.userId
+    return res.status(200).json(task)
+}))
 
 // GET /task/id/:id
 router.get('/id/:id', auth, errForward(async (req, res) => {
