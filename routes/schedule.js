@@ -1,5 +1,4 @@
 const router = require("express").Router;
-const upload = require('../middleware/multer')
 const { scheduleValidtn } = require('../middleware/input_validation')
 const errForward = require('../utils/errorForward')
 const prisma = require('../utils/db')
@@ -44,6 +43,14 @@ router.get('/id/:id', auth, errForward(async (req, res) => {
     const schedule = await prisma.schedule.findUnique({
         where: {
             id: req.params.id,
+        },
+        include: {
+            works: true,
+            streaks: {
+                some: {
+                    scheduleId: req.params.id,
+                }
+            }
         }
     })
 
@@ -54,11 +61,25 @@ router.get('/id/:id', auth, errForward(async (req, res) => {
     }
 
     return res.status(200).json(schedule)
-}))
+})) 
 
-// GET /schedule/all?sortBy=(startDate, endDate, gap) ?highestPriority=(true,false)
+// GET /schedule/all
 router.get('/all', auth, errForward(async (req, res) => {
-    // ==VISIT==
+    const schedules = await prisma.schedule.findMany({
+        where: {
+            userId: req.locals.userId,
+            ...req.body.where,
+        },
+        orderBy: req.body.orderBy,   // eg: [ { 'startDate: 'asc' }, { 'endDate': 'desc' } ]
+    })
+
+    if (!schedules) {
+        return res.status(500).json({
+            err: `Could not find schedule with id: ${req.params.id}`
+        })
+    }
+
+    return res.status(200).json(schedules)
 }))
 
 // POST /schedule/new

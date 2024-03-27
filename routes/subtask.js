@@ -24,13 +24,25 @@ router.get('/id/:id', auth, errForward(async (req, res) => {
     return res.status(200).json(subtask)
 }))
 
-// GET /subtask/all (query=> sort by priority, deadline, group=> task, label, priority, cat, sub cat, tag, bookmark, completed)
-router.get('/id/all', auth, errForward(async (req, res) => {
-    // ==VISIT==
+// GET /subtask/all/:taskId (query=> sort by priority, deadline, group=> task, label, priority, cat, sub cat, tag, bookmark, completed)
+router.get('/all/:taskId', auth, errForward(async (req, res) => {
+    const subtasks = await prisma.subtask.findMany({
+        where: {
+            taskId: req.params.taskId,
+        },
+    })
+
+    if(!subtasks) {
+        return res.status(500).json({
+            err: 'Error fetching subtasks'
+        })
+    }
+
+    return res.status(200).json(subtasks)
 }))
 
 // POST /subtask/new/:taskId
-router.post('/new', auth, uplSubtaskValidtn, upload.array('file', 3), errForward(async (req, res) => {
+router.post('/new/:taskId', auth, uplSubtaskValidtn, upload.array('file', 3), errForward(async (req, res) => {
     const createdSubtask = await prisma.subtask.create({
         data: {
             desc: req.headers.desc,

@@ -1,6 +1,6 @@
 const router = require("express").Router;
 const upload = require('../middleware/multer')
-const { uplTaskValidtn, taskValidtn } = require('../middleware/input_validation')
+const { uplTaskValidtn } = require('../middleware/input_validation')
 const errForward = require('../utils/errorForward')
 const prisma = require('../utils/db')
 const auth = require('../middleware/authentication')
@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken')
 const fs = require('node:fs/promises')
 
 // GET /user/share-my-task/:taskId
-router.get('/share-my-task', auth, errForward(async (req, res) => {
+router.get('/share-my-task/:taskId', auth, errForward(async (req, res) => {
     const taskIdJwt = jwt.sign(req.params.taskId, process.env.SHARE_JWT_SECRET)
     return res.status(200).json(taskIdJwt)
 }))
@@ -74,9 +74,23 @@ router.get('/archived', auth, errForward(async (req, res) => {
     return res.status(200).json(tasks)
 }))
 
-// GET /task/all (query=> sort by priority, deadline, group=> label, priority, cat, sub cat, tag, bookmark, completed)
-router.get('/id/:id', auth, errForward(async (req, res) => {
-    // ==VISIT==
+// GET /task/all
+router.get('/all', auth, errForward(async (req, res) => {
+    const tasks = await prisma.subtask.findMany({
+        where: {
+            userId: req.locals.userId,
+            ...req.body.where,
+        },
+        orderBy: req.body.orderBy,
+    })
+
+    if (!tasks) {
+        return res.status(500).json({
+            err: 'Error fetching tasks'
+        })
+    }
+
+    return res.status(200).json(tasks)
 }))
 
 // GET /task/search/?name_desc= (full text search)

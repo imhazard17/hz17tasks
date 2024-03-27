@@ -9,16 +9,19 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  username  String     @unique
-  bio       String?
-  password  String
-  firstName String?
-  lastName  String?
-  doj       DateTime   @default(now())
-  dpUrl     String?
-  tasks     Task[]
-  schedules Schedule[]
+  id               Int                @id @default(autoincrement())
+  username         String             @unique
+  bio              String?
+  password         String
+  restrictView     Boolean
+  firstName        String?
+  lastName         String?
+  doj              DateTime           @default(now())
+  dpUrl            String?
+  tasks            Task[]
+  schedules        Schedule[]
+  streaks          Streak[]
+  scheduleWorkDone ScheduleWorkDone[]
 }
 
 model Task {
@@ -31,6 +34,7 @@ model Task {
   subCategory String?
   priority    String?
   tags        String[]
+  private     Boolean
   bookmark    Boolean
   completed   Boolean
   archive     Boolean
@@ -54,26 +58,53 @@ model Subtask {
 }
 
 model Schedule {
-  id              Int      @id @default(autoincrement())
-  user            User     @relation(fields: [userId], references: [id])
-  userId          Int
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now())
-  name            String
-  desc            String?
-  startDate       DateTime?
-  endDate         DateTime?
-  gapDays         Int
-  highestPriority Boolean
-  works           Work[]
+  id                Int                @id @default(autoincrement())
+  user              User               @relation(fields: [userId], references: [id])
+  userId            Int
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @default(now())
+  name              String
+  desc              String?
+  private           Boolean
+  startDate         DateTime?
+  endDate           DateTime?
+  highestPriority   Boolean
+  streaks           Streak[]
+  works             Work[]
+  scheduleWorksDone ScheduleWorkDone[]
 }
 
 model Work {
+  id               Int                @id @default(autoincrement())
+  name             String
+  desc             String?
+  startTime        DateTime?
+  endTime          DateTime?
+  schedule         Schedule           @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  scheduleId       Int
+  scheduleWorkDone ScheduleWorkDone[]
+}
+
+model Streak {
+  id         Int       @id @default(autoincrement())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  startDate  DateTime
+  endDate    DateTime?
+  schedule   Schedule  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  scheduleId Int
+
+  @@unique([scheduleId, startDate, endDate], name: "streakIdentifier")
+}
+
+model ScheduleWorkDone {
   id         Int      @id @default(autoincrement())
-  name       String
-  desc       String?
-  startTime  DateTime
-  endTime    DateTime
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
   schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
   scheduleId Int
+  work       Work     @relation(fields: [workId], references: [id], onDelete: Cascade)
+  workId     Int
+
+  @@unique([scheduleId, workId], name: "scheduleWorkIdentifier")
 }

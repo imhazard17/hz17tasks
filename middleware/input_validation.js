@@ -41,7 +41,6 @@ const scheduleSchema = z.object({
     endDate: z.date().optional(),
     createdAt: z.date(),
     updatedAt: z.date(),
-    gapDays: z.number().min(1).max(365),  // generate_series raw sql (postgres)
     highestPriority: z.boolean(),
 })
 
@@ -49,9 +48,8 @@ const workSchema = z.object({
     name: z.string().min(3).max(100),
     desc: z.string().max(500).optional(),
     scheduleId: z.number(),
-    completed: z.boolean(),
-    startTime: z.date(),
-    endTime: z.date(),
+    startTime: z.date().optional(),
+    endTime: z.date().optional(),
 })
 
 function userValidtn(req, res, next) {

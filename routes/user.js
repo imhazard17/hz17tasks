@@ -23,28 +23,38 @@ router.get('/shared-profile/:userIdJwt', auth, errForward(async (req, res) => {
             id: userId,
         },
         include: {
-            tasks: {
+            tasks: {    // include relations if restrictView: false
                 some: {
-                    archived: true
+                    archived: false,
+                    private: false,
                 }
             },
-            schedules: true,
+            schedules: {
+                some: {
+                    private: false,
+                }
+            },
             _count: {
                 select: {
                     tasks: {
                         some: {
-                            archived: true
+                            archived: false
                         }
                     },
                 }
             }
-        }
+        },
     })
 
     if (!user) {
         return res.status(404).json({
             err: 'Error getting user details'
         })
+    }
+
+    if(user.restrictView) {
+        delete user.tasks
+        delete user.schedules
     }
 
     delete user.password
@@ -65,7 +75,12 @@ router.get('/my-details', auth, errForward(async (req, res) => {
                     tasks: true,
                     schedules: true
                 }
-            }
+            },
+            streaks: {
+                some: {
+                    endDate: null,
+                }
+            },
         }
     })
 
