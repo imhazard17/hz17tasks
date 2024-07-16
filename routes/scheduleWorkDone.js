@@ -5,6 +5,25 @@ const prisma = require('../utils/db')
 const auth = require('../middleware/authentication')
 const router = require("express").Router;
 
+// GET /scheduleWorkDone/:scheduleId
+router.get('/', auth, errForward(async (req, res) => {
+    const scheduleWorkDones = await prisma.scheduleWorkDone.findMany({
+        where: {
+            scheduleId: req.params.scheduleId,
+        }
+    })
+
+    if (!scheduleWorkDones) {
+        return res.status(500).json({
+            err: `Could not find scheduleWorkDones with schedule id: ${req.params.scheduleId}`
+        })
+    }
+
+    return res.status(201).json({
+        msg: `Successfully created scheduleWorkDone with id: ${scheduleWorkDones.id}`
+    })
+}))
+
 // POST /scheduleWorkDone
 router.post('/', auth, errForward(async (req, res) => {
     const scheduleWorkDone = await prisma.scheduleWorkDone.create({
@@ -20,7 +39,7 @@ router.post('/', auth, errForward(async (req, res) => {
 
     if (!scheduleWorkDone) {
         return res.status(500).json({
-            err: `Could not find streaks with schedule id: ${req.params.id}`
+            err: 'Could not create scheduleWorkDone'
         })
     }
 
@@ -42,8 +61,8 @@ router.delete('/', auth, uplSubtaskValidtn, errForward(async (req, res) => {
     })
 
     if (!scheduleWorkDone) {
-        return res.status(404).json({
-            err: 'Could not fetch streaks'
+        return res.status(500).json({
+            err: 'Could not delete scheduleWorkDone'
         })
     }
 
