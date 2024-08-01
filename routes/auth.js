@@ -1,13 +1,12 @@
-const router = require("express").Router;
+const router = require("express").Router();
 const upload = require('../middleware/multer')
 const { uplUserValidtn, userValidtn } = require('../middleware/input_validation')
 const errForward = require('../utils/errorForward')
 const prisma = require('../utils/db')
 const bcrypt = require('bcrypt')
-const auth = require('../middleware/authentication')
 
 // POST /auth/signup
-router.post('/signup', auth, uplUserValidtn, upload.single('file'), errForward(async (req, res) => {
+router.post('/signup', uplUserValidtn, upload.single('file'), errForward(async (req, res) => {
     const createdUser = await prisma.user.create({
         data: {
             username: req.headers.username,
@@ -36,7 +35,7 @@ router.post('/signup', auth, uplUserValidtn, upload.single('file'), errForward(a
 }))
 
 // GET /auth/login
-router.get('/login', auth, userValidtn, errForward(async (req, res) => {
+router.get('/login', userValidtn, errForward(async (req, res) => {
     const user = await prisma.user.findUnique({
         where: {
             username: req.body.username

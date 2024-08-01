@@ -1,9 +1,8 @@
-const router = require("express").Router;
+const router = require("express").Router();
 const { scheduleValidtn } = require('../middleware/input_validation')
 const errForward = require('../utils/errorForward')
 const prisma = require('../utils/db')
 const auth = require('../middleware/authentication')
-const router = require("express").Router;
 
 // GET /user/share-my-schedule/:scheduleId
 router.get('/share-my-schedule/:scheduleId', auth, errForward(async (req, res) => {

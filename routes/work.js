@@ -1,9 +1,8 @@
-const router = require("express").Router;
+const router = require("express").Router();
 const { workValidtn } = require('../middleware/input_validation')
 const errForward = require('../utils/errorForward')
 const prisma = require('../utils/db')
 const auth = require('../middleware/authentication')
-const router = require("express").Router;
 
 // GET /work/id/:id
 router.get('/id/:id', auth, errForward(async (req, res) => {
